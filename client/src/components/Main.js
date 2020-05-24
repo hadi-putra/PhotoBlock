@@ -57,12 +57,20 @@ class Main extends Component {
                                     <td><img src= {`http://127.0.0.1:8080/ipfs/${image.ipfsHash}`} alt=""/></td>
                                     <td>{image.owner}</td>
                                     <td>
-                                        { <button 
+                                        { (image.owner !== this.props.account)
+                                            ? !image.purchased 
+                                                ? <button 
                                                     name={image.id} 
                                                     value={image.price} 
                                                     onClick={(event) => {
                                                         this.props.purchaseImage(event.target.name, event.target.value, image.owner)
-                                                    }}>Buy</button>
+                                                    }}>Buy</button> 
+                                                : <button name={image.id} value={image.name} onClick={(event)=>{
+                                                    this.props.retrieveImage(event.target.name, event.target.value)
+                                                }}>Download</button>
+                                            : <button name={image.id} value={image.name} onClick={(event)=>{
+                                                this.props.retrieveImage(event.target.name, event.target.value)
+                                            }}>Download</button> 
                                         }
                                     </td>
                                 </tr>
