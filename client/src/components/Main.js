@@ -63,7 +63,7 @@ class Main extends Component {
                                                     name={image.id} 
                                                     value={image.price} 
                                                     onClick={(event) => {
-                                                        this.props.purchaseImage(event.target.name, event.target.value, image.owner)
+                                                        this.props.purchaseImage(event.target.name, event.target.value, image.owner, key)
                                                     }}>Buy</button> 
                                                 : <button name={image.id} value={image.name} onClick={(event)=>{
                                                     this.props.retrieveImage(event.target.name, event.target.value)

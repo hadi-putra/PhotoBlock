@@ -26,9 +26,6 @@ class App extends Component {
         networkData && networkData.address,
       );
 
-      console.log(marketplace._address)
-      console.log(networkData.address)
-
       const tokenData = PhotoBlockToken.networks[networkId];
       const token = new web3.eth.Contract(
         PhotoBlockToken.abi,
@@ -48,7 +45,6 @@ class App extends Component {
       }
 
       this.setState({ web3, account: accounts[0], token, marketplace, currencyCode, wallet, imageCount, loading: false });
-      console.log("address", this.state.marketplace);
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -100,7 +96,11 @@ class App extends Component {
         this.state.marketplace.methods.createImage(_name, _price, file.cid.toString())
           .send({from: this.state.account })
           .once('receipt', (receipt) => {
-            console.log(receipt.events.ImageCreated.returnValues)
+            var created = receipt.events.ImageCreated.returnValues
+            created.purchased = false
+            this.setState({
+              images: [...this.state.images, created]
+            })
             this.setState({loading: false})
           })
       }
@@ -109,13 +109,15 @@ class App extends Component {
     }
   }
 
-  purchaseImage(_id, _price, _seller){
+  purchaseImage(_id, _price, _seller, _index){
+    console.log(_index)
     this.setState({loading: true})
     this.state.token.methods
       .transferAndCall(this.state.marketplace._address, _seller, _price, this.state.web3.utils.toHex(_id))
       .send({ from: this.state.account })
       .once('receipt', (receipt) => {
         console.log(receipt)
+        this.state.images[_index].purchased = true
         this.setState({loading: false})
       })
   }
