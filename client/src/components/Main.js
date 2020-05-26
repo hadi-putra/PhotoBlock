@@ -16,8 +16,7 @@ class Main extends Component {
                         <input id="imageName" type="text" 
                             ref={(input) => {this.imageName = input }} 
                             className="form-control" 
-                            placeholder="Image Name"
-                            required />
+                            placeholder="Image Name" />
                     </div>
                     <div className="form-group mr-sm-2">
                         <input id="imagePrice" type="text" 
@@ -53,7 +52,7 @@ class Main extends Component {
                                 <tr key={key}>
                                     <th scope="row">{image.id.toString()}</th>
                                     <td>{image.name}</td>
-                                    <td>{image.price.toString()} PBC</td>
+                                    <td>{image.price.toString()} {this.props.currencyCode}</td>
                                     <td><img src= {`http://127.0.0.1:8080/ipfs/${image.ipfsHash}`} alt=""/></td>
                                     <td>{image.owner}</td>
                                     <td>

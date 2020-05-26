@@ -1,16 +1,17 @@
 import React, { Component } from "react";
+import {Route, Switch} from 'react-router-dom'
 import ImageMarketPlace from "./contracts/ImageMarketPlace.json";
 import PhotoBlockToken from "./contracts/PhotoBlockToken.json";
 import getWeb3 from "./getWeb3";
-import ipfs from"./ipfs";
+import Home from './components/Home'
+import NewImage from './components/image/NewImage'
 import Navbar from './components/Navbar'
-import Main from './components/Main'
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
 class App extends Component {
 
-  componentWillMount = async () => {
+  componentDidMount = async () => {
     try {
       // Get network provider and web3 instance.
       const web3 = await getWeb3();
@@ -67,111 +68,41 @@ class App extends Component {
       images: [],
       loading: true
     };
-
-    this.captureFile = this.captureFile.bind(this);
-    this.handleUpload = this.handleUpload.bind(this);
-    this.retrieveImage = this.retrieveImage.bind(this);
-    this.purchaseImage = this.purchaseImage.bind(this);
-  }
-
-  captureFile(event){
-    event.preventDefault()
-
-    const _file = event.target.files[0]
-    this.setState(() => ({file: _file}))
-  }
-
-  handleUpload(_name, _price){
-    this.setState({loading: true})
-    const options = {
-      progress: (prog) => console.log(`received: ${prog}`)
-    }
-    const source = ipfs.add(this.state.file, options)
-    this.processIPFS(source, _name, _price)
-  }
-
-  async processIPFS(source, _name, _price){
-    try {
-      for await (const file of source) {
-        this.state.marketplace.methods.createImage(_name, _price, file.cid.toString())
-          .send({from: this.state.account })
-          .once('receipt', (receipt) => {
-            var created = receipt.events.ImageCreated.returnValues
-            created.purchased = false
-            this.setState({
-              images: [...this.state.images, created]
-            })
-            this.setState({loading: false})
-          })
-      }
-    } catch (err) {
-      console.error(err)
-    }
   }
 
   purchaseImage(_id, _price, _seller, _index){
-    console.log(_index)
     this.setState({loading: true})
     this.state.token.methods
       .transferAndCall(this.state.marketplace._address, _seller, _price, this.state.web3.utils.toHex(_id))
       .send({ from: this.state.account })
       .once('receipt', (receipt) => {
-        console.log(receipt)
-        this.state.images[_index].purchased = true
+        const images = this.state.images
+        images[_index].purchased = true
+        this.setState({images})
         this.setState({loading: false})
       })
-  }
-
-  async retrieveImage(_id, _name){
-    const image = await this.state.marketplace.methods.images(_id).call();
-
-    const source = ipfs.cat(`/ipfs/${image.ipfsHash}`)
-    try{
-      for await (const buffer of source) {
-        let blob = new Blob([buffer],{type: "image/jpeg"})
-        //let imgUrl = window.URL.createObjectURL(blob)
-        var a = document.createElement("a");
-        document.body.appendChild(a);
-        a.style = "display: none";
-        let url = window.URL.createObjectURL(blob);
-        a.href = url;
-        a.download = `${_name}.jpeg`;
-        a.click()
-        window.URL.revokeObjectURL(url);
-      }
-    } catch (err) {
-      console.log("exception")
-      console.error(err)
-    }
   }
 
   render() {
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
-    return (
-      <div className="App">
-        <Navbar account={this.state.account} />
-        <div className="container-fluid mt-5">
-          <div className="row">
-            <main role="main" className="col-lg-12 d-flex">
-              { this.state.loading
-                ? <div id="loader" className="text-center"><p className="text-center">Loading...</p></div>
-                : <Main
-                    images = {this.state.images}
-                    account = {this.state.account}
-                    handleUpload = {this.handleUpload}
-                    captureFile = {this.captureFile}
-                    retrieveImage = {this.retrieveImage}
-                    purchaseImage = {this.purchaseImage}
-                    web3 = {this.state.web3}
-                    />
-              }
-            </main>
-          </div>
-        </div>
-      </div>
-    );
+    return(<div>
+      <Navbar account={this.state.account} />
+      <Switch>
+        <Route 
+          exact path="/" 
+          render = {(props) => <Home {...props} 
+            web3={this.state.web3}
+            account={this.state.account}/>}/>
+        <Route
+          path="/image/new"
+          render = {(props) => <NewImage {...props}
+          web3={this.state.web3}
+          marketplace={this.state.marketplace}
+          account={this.state.account}/>}/>
+      </Switch>
+    </div>);
   }
 }
 

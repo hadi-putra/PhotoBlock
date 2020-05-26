@@ -7,6 +7,7 @@ contract ImageMarketPlace is TokenRecipient {
     uint public imageCount = 0;
     mapping(uint => Image) public images;
     mapping(address => mapping(uint => bool)) public imagesPaid;
+    mapping(string => bool) private imageExist;
 
     PhotoBlockToken private tokenContract;
 
@@ -19,6 +20,8 @@ contract ImageMarketPlace is TokenRecipient {
         uint id;
         string name;
         string ipfsHash;
+        string ext;
+        string mime;
         uint price;
         bool purchased;
         address payable owner;
@@ -28,6 +31,8 @@ contract ImageMarketPlace is TokenRecipient {
         uint id,
         string name,
         string ipfsHash,
+        string ext,
+        string mime,
         uint price,
         bool purchased,
         address payable owner
@@ -52,13 +57,16 @@ contract ImageMarketPlace is TokenRecipient {
         _;
     }
 
-    function createImage(string memory _name, uint _price, string memory _ipfsHash) public {
+    function createImage(string memory _name, uint _price, string memory _ipfsHash, 
+                         string memory _fileExt, string memory _fileMime) public {
         require(bytes(_ipfsHash).length > 0, "Invalid IPFS address!");
         require(bytes(_name).length > 0, "Name cannot be empty!");
         require(_price > 0, "Price must be not 0!");
+        require(!imageExist[_ipfsHash]);
         imageCount ++;
-        images[imageCount] = Image(imageCount, _name, _ipfsHash, _price, false, msg.sender);
-        emit ImageCreated(imageCount, _name, _ipfsHash, _price, false, msg.sender);
+        imageExist[_ipfsHash] = true;
+        images[imageCount] = Image(imageCount, _name, _ipfsHash, _fileExt, _fileMime, _price, false, msg.sender);
+        emit ImageCreated(imageCount, _name, _ipfsHash, _fileExt, _fileMime, _price, false, msg.sender);
     }
 
     function purchaseImage(uint _id) public payable {
