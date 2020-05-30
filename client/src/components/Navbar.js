@@ -39,8 +39,8 @@ const Navbar = withRouter(({history}) => (
                     <Link to="/image/new">
                         <Button style={isPartActive(history,"/image/new")}>Upload Image</Button>
                     </Link>
-                    <Link to="/">
-                        <Button style={isActive(history,"/user/1")}>My Profile</Button>
+                    <Link to="/my-account">
+                        <Button style={isActive(history,"/my-account")}>My Profile</Button>
                     </Link>
                 </span>
             </div>

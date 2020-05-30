@@ -5,6 +5,7 @@ import PhotoBlockToken from "./contracts/PhotoBlockToken.json";
 import getWeb3 from "./getWeb3";
 import Home from './components/Home'
 import NewImage from './components/image/NewImage'
+import MyAccount from './components/account/MyAccount'
 import Navbar from './components/Navbar'
 
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -101,6 +102,12 @@ class App extends Component {
           web3={this.state.web3}
           marketplace={this.state.marketplace}
           account={this.state.account}/>}/>
+        <Route
+          path="/my-account"
+          render = {(props) => <MyAccount {...props}
+          account = {this.state.account}
+          web3 = {this.state.web3}
+          />}/>
       </Switch>
     </div>);
   }

@@ -10,15 +10,15 @@ import * as serviceWorker from './serviceWorker';
 const theme = createMuiTheme({
     palette: {
         primary: {
-            light: '#8eacbb',
-            main: '#607d8b',
-            dark: '#34515e',
+            light: '#428d90',
+            main: '#005f63',
+            dark: '#003539',
             contrastText: '#fff',
         },
         secondary: {
-            light: '#e7ff8c',
-            main: '#b2ff59',
-            dark: '#7ecb20',
+            light: '#ffad42',
+            main: '#f57c00',
+            dark: '#bb4d00',
             contrastText: '#000'
         },
         openTitle: blueGrey['400'],

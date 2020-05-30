@@ -84,7 +84,7 @@ contract("PhotoBlockToken", accounts => {
         const { logs, receipt } = await tokenInstance.transferFrom(fromAccount, toAccount, spendingAmount, {from: spenderAccount});
         assert.equal(receipt.status, true);
         assert.equal(logs.length, 1, 'triggers one event');
-        assert.equal(logs[0].event, 'Transfer', 'shpuld be the "Transfer" event');
+        assert.equal(logs[0].event, 'Transfer', 'should be the "Transfer" event');
         assert.equal(logs[0].args._from, fromAccount, 'logs the account from');
         assert.equal(logs[0].args._to, toAccount, 'logs the account to');
         assert.equal(logs[0].args._value, spendingAmount, 'logs the transfer amount');
@@ -96,10 +96,5 @@ contract("PhotoBlockToken", accounts => {
         assert.equal(balanceFrom.toNumber(), 50, 'deducts the amount from the spending account');
         assert.equal(balanceTo.toNumber(), 50, 'add the amount from the spending account');
         assert.equal(allowance.toNumber(), 0, 'deducts the amount from the allowance');
-    });
-
-    it('handle transfer will callback', async() => {
-        marketplaceInstance = await marketplace.deployed();
-        assert.equal(marketplaceInstance, tokenInstance);
     });
 });

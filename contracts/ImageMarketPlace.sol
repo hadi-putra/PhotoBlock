@@ -6,14 +6,13 @@ contract ImageMarketPlace is TokenRecipient {
     string public name;
     uint public imageCount = 0;
     mapping(uint => Image) public images;
+    mapping(address => uint[]) private imageUploaded;
+    mapping(address => uint[]) private imageBought;
     mapping(address => mapping(uint => bool)) public imagesPaid;
     mapping(string => bool) private imageExist;
 
-    PhotoBlockToken private tokenContract;
-
-    constructor(PhotoBlockToken _tokenContract) public {
+    constructor() public {
         name = "PhotoStock";
-        tokenContract = _tokenContract;
     }
 
     struct Image {
@@ -57,6 +56,14 @@ contract ImageMarketPlace is TokenRecipient {
         _;
     }
 
+    function imagesUploaded() public view returns(uint[] memory){
+        return imageUploaded[msg.sender];
+    }
+
+    function imagesBought() public view returns(uint[] memory){
+        return imageBought[msg.sender];
+    }
+
     function createImage(string memory _name, uint _price, string memory _ipfsHash, 
                          string memory _fileExt, string memory _fileMime) public {
         require(bytes(_ipfsHash).length > 0, "Invalid IPFS address!");
@@ -66,6 +73,7 @@ contract ImageMarketPlace is TokenRecipient {
         imageCount ++;
         imageExist[_ipfsHash] = true;
         images[imageCount] = Image(imageCount, _name, _ipfsHash, _fileExt, _fileMime, _price, false, msg.sender);
+        imageUploaded[msg.sender].push(imageCount);
         emit ImageCreated(imageCount, _name, _ipfsHash, _fileExt, _fileMime, _price, false, msg.sender);
     }
 
@@ -74,14 +82,15 @@ contract ImageMarketPlace is TokenRecipient {
     }
 
     function _purchaseImageFor(uint _id, address _buyer, uint256 _value) private {
+        require(_id > 0 && _id <= imageCount, "Invalid image ID!");
         Image memory _img = images[_id];
 
         address payable _seller = _img.owner;
-        require(_img.id > 0 && _img.id <= imageCount, "Invalid image ID!");
         require(_value == _img.price, "The price doesn't match");
         require(_seller != _buyer, "Photographer doesn't need to buy his/her own image");
         require(!imagesPaid[_buyer][_id], "You have already bought this image!");
         imagesPaid[_buyer][_id] = true;
+        imageBought[_buyer].push(_id);
         emit ImagePurchased(_img.id, _img.name, _img.ipfsHash, _img.price, _img.owner);
     }
 
