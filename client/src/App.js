@@ -1,11 +1,10 @@
 import React, { Component } from "react";
 import {Route, Switch} from 'react-router-dom'
-import ImageMarketPlace from "./contracts/ImageMarketPlace.json";
-import PhotoBlockToken from "./contracts/PhotoBlockToken.json";
 import getWeb3 from "./getWeb3";
 import Home from './components/Home'
 import NewImage from './components/image/NewImage'
 import MyAccount from './components/account/MyAccount'
+import EditImage from './components/image/EditImage'
 import Navbar from './components/Navbar'
 
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -21,32 +20,7 @@ class App extends Component {
       const accounts = await web3.eth.getAccounts();
 
       // Get the contract instance.
-      const networkId = await web3.eth.net.getId();
-      const networkData = ImageMarketPlace.networks[networkId];
-      const marketplace = new web3.eth.Contract(
-        ImageMarketPlace.abi,
-        networkData && networkData.address,
-      );
-
-      const tokenData = PhotoBlockToken.networks[networkId];
-      const token = new web3.eth.Contract(
-        PhotoBlockToken.abi,
-        tokenData && tokenData.address,
-      );
-      const currencyCode = await token.methods.symbol().call();
-      const wallet = await token.methods.balanceOf(accounts[0]).call();
-      
-      const imageCount = await marketplace.methods.imageCount().call();
-      for (var i = 1; i <= imageCount; i++){
-        const image = await marketplace.methods.images(i).call();
-        image.purchased = await marketplace.methods.imagesPaid(accounts[0], i).call();
-        
-        this.setState({
-          images: [...this.state.images, image]
-        })
-      }
-
-      this.setState({ web3, account: accounts[0], token, marketplace, currencyCode, wallet, imageCount, loading: false });
+      this.setState({ web3, account: accounts[0], loading: false });
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -61,27 +35,8 @@ class App extends Component {
     this.state = { 
       web3: null, 
       account: '', 
-      token: null,
-      marketplace: null, 
-      currencyCode: '',
-      imageCount: 0,
-      wallet: 0,
-      images: [],
       loading: true
     };
-  }
-
-  purchaseImage(_id, _price, _seller, _index){
-    this.setState({loading: true})
-    this.state.token.methods
-      .transferAndCall(this.state.marketplace._address, _seller, _price, this.state.web3.utils.toHex(_id))
-      .send({ from: this.state.account })
-      .once('receipt', (receipt) => {
-        const images = this.state.images
-        images[_index].purchased = true
-        this.setState({images})
-        this.setState({loading: false})
-      })
   }
 
   render() {
@@ -100,8 +55,12 @@ class App extends Component {
           path="/image/new"
           render = {(props) => <NewImage {...props}
           web3={this.state.web3}
-          marketplace={this.state.marketplace}
           account={this.state.account}/>}/>
+        <Route
+          path="/image/:imageId/edit"
+          render = {(props) => <EditImage {...props}
+          account = {this.state.account}
+          web3 = {this.state.web3}/>}/>
         <Route
           path="/my-account"
           render = {(props) => <MyAccount {...props}

@@ -40,7 +40,7 @@ const Navbar = withRouter(({history}) => (
                         <Button style={isPartActive(history,"/image/new")}>Upload Image</Button>
                     </Link>
                     <Link to="/my-account">
-                        <Button style={isActive(history,"/my-account")}>My Profile</Button>
+                        <Button style={isActive(history,"/my-account")}>My Account</Button>
                     </Link>
                 </span>
             </div>

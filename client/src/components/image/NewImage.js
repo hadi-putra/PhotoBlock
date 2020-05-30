@@ -9,6 +9,7 @@ import FileUpload from '@material-ui/icons/AddPhotoAlternate'
 import TextField from '@material-ui/core/TextField'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import {withStyles} from '@material-ui/core/styles'
+import ImageMarketplace from "./../../contracts/ImageMarketPlace.json"
 import ipfs from"./../../ipfs";
 
 const pathParse = require('path-parse');
@@ -48,10 +49,30 @@ const styles = theme => ({
 
 class NewImage extends Component{
 
+    componentDidMount = async()=>{
+        try{
+            const web3 = this.state.web3
+            const networkId = await web3.eth.net.getId();
+
+            const imageMarketplace = ImageMarketplace.networks[networkId];
+            const marketplace = new web3.eth.Contract(
+                ImageMarketplace.abi,
+                imageMarketplace && imageMarketplace.address,
+            );
+            this.setState({marketplace, loading: false})
+        } catch(error){
+            alert(
+                `Failed to load web3, accounts, or contract. Check console for details.`,
+              );
+            console.error(error);
+        }
+    }
+
     constructor(props){
         super(props)
         this.state = {
-            marketplace: props.marketplace,
+            web3: props.web3,
+            marketplace: null,
             account: props.account,
             name: '',
             file: null,
@@ -130,7 +151,7 @@ class NewImage extends Component{
 
     render(){
         if(this.state.redirect){
-            return (<Redirect to={'/'}/>)
+            return (<Redirect to={'/my-account'}/>)
         }
         const {classes} = this.props
         return (<div>

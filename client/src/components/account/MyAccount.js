@@ -193,12 +193,13 @@ class MyAccount extends Component {
                                             </ListItemAvatar>
                                             <ListItemText primary={image.name} secondary={image.price+" PBcoin"}/>
                                             <ListItemSecondaryAction>
-                                                <Link to="/">
+                                                <Link to={"/image/"+image.id+"/edit"}>
                                                     <IconButton aria-label="Edit" color="primary"><EditIcon/></IconButton>
                                                 </Link>
                                                 <IconButton aria-label="Download" color="primary"><DownloadIcon/></IconButton>
                                             </ListItemSecondaryAction>
                                         </ListItem>
+                                        <Divider/>
                                     </span>
                                 })}
                             </List>:
@@ -219,6 +220,7 @@ class MyAccount extends Component {
                                                 <IconButton aria-label="Download" color="primary"><DownloadIcon/></IconButton>
                                             </ListItemSecondaryAction>
                                         </ListItem>
+                                        <Divider/>
                                     </span>
                                 })}
                             </List>:
