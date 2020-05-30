@@ -5,10 +5,23 @@ import Tabs from '@material-ui/core/Tabs'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
 import Grid from '@material-ui/core/Grid'
+import List from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
+import ListItemAvatar from '@material-ui/core/ListItemAvatar'
+import ListItemText from '@material-ui/core/ListItemText'
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
+import Avatar from '@material-ui/core/Avatar'
 import Paper from '@material-ui/core/Paper'
 import Divider from '@material-ui/core/Divider'
+import Box from '@material-ui/core/Box'
 import {withStyles} from '@material-ui/core/styles'
+import IconButton from '@material-ui/core/IconButton'
+import DownloadIcon from '@material-ui/icons/CloudDownload'
+import EditIcon from '@material-ui/icons/Edit'
+import {Link} from 'react-router-dom'
 import PhotoBlockToken from "./../../contracts/PhotoBlockToken.json"
+import ImageMarketplace from "./../../contracts/ImageMarketPlace.json"
+import PropTypes from 'prop-types'
 
 const styles = theme => ({
     root: {
@@ -37,6 +50,35 @@ const styles = theme => ({
     }
 })
 
+function a11yProps(index) {
+    return {
+      id: `full-width-tab-${index}`,
+      'aria-controls': `full-width-tabpanel-${index}`,
+    };
+}
+
+function TabPanel(props) {
+    const { children, value, index, ...other } = props;
+
+    return (
+        <Box p={3}
+          role="tabpanel"
+          hidden={value !== index}
+          id={`full-width-tabpanel-${index}`}
+          aria-labelledby={`full-width-tab-${index}`}
+          {...other}
+        >
+          {children}
+        </Box>
+    );
+}
+
+TabPanel.propTypes = {
+    children: PropTypes.node,
+    index: PropTypes.any.isRequired,
+    value: PropTypes.any.isRequired,
+  };
+
 class MyAccount extends Component {
 
     componentDidMount = async() => {
@@ -50,8 +92,35 @@ class MyAccount extends Component {
                 tokenData && tokenData.address,
             );
 
+            const imageMarketplace = ImageMarketplace.networks[networkId];
+            const marketplace = new web3.eth.Contract(
+                ImageMarketplace.abi,
+                imageMarketplace && imageMarketplace.address,
+            );
+
             const currencyCode = await token.methods.symbol().call();
             const wallet = await token.methods.balanceOf(this.state.account).call();
+
+            const idsUploaded = await marketplace.methods.imagesUploaded().call({from: this.state.account});
+            for(var i = 0; i < idsUploaded.length; i++){
+                const image = await marketplace.methods.images(idsUploaded[i]).call();
+                image.purchased = true;
+
+                this.setState({
+                    imageUploaded: [...this.state.imageUploaded, image]
+                })
+            }
+
+            const idsBought = await marketplace.methods.imagesBought().call({from: this.state.account});
+            for(i = 0; i < idsBought.length; i++){
+                const image = await marketplace.methods.images(idsBought[i]).call();
+                image.purchased = true;
+
+                this.setState({
+                    imageBought: [...this.state.imageBought, image]
+                })
+            }
+
             this.setState({currencyCode, wallet})
         } catch(error){
             alert(
@@ -68,15 +137,16 @@ class MyAccount extends Component {
             account: props.account,
             currencyCode: '',
             wallet: 0,
-            tabIndex: 0
+            tabIndex: 0,
+            imageUploaded: [],
+            imageBought: []
         }
-        //this.handleChange = this.handleChange.bind(this)
     }
 
     handleChange = (e, index) => {
-        console.log(index)
         this.setState({tabIndex: index})
     }
+    
 
     render(){
         const {classes} = this.props
@@ -106,12 +176,55 @@ class MyAccount extends Component {
             <br/>
             <Card className={classes.card}>
                 <CardContent className={classes.content}>
-                    <Tabs indicatorColor="primary" textColor="primary" fullWidth variant="fullWidth"
-                        value={this.state.tabIndex} onChange={this.handleChange}>
-                        <Tab label="Image Uploaded"/>
-                        <Tab label="Image Bought"/>
+                    <Tabs indicatorColor="primary" textColor="primary" variant="fullWidth"
+                        value={this.state.tabIndex} onChange={this.handleChange} aria-label="full width tabs example">
+                        <Tab label="Image Uploaded" {...a11yProps(0)} />
+                        <Tab label="Image Bought"{...a11yProps(1)}/>
                     </Tabs>
                     <Divider/>
+                    <TabPanel value={this.state.tabIndex} index={0}>
+                        {this.state.imageUploaded.length > 0 ? 
+                            <List dense>
+                                {this.state.imageUploaded.map((image, index) => {
+                                    return <span key={index}>
+                                        <ListItem button>
+                                            <ListItemAvatar>
+                                                <Avatar src={`http://127.0.0.1:8080/ipfs/${image.ipfsHash}`}/>
+                                            </ListItemAvatar>
+                                            <ListItemText primary={image.name} secondary={image.price+" PBcoin"}/>
+                                            <ListItemSecondaryAction>
+                                                <Link to="/">
+                                                    <IconButton aria-label="Edit" color="primary"><EditIcon/></IconButton>
+                                                </Link>
+                                                <IconButton aria-label="Download" color="primary"><DownloadIcon/></IconButton>
+                                            </ListItemSecondaryAction>
+                                        </ListItem>
+                                    </span>
+                                })}
+                            </List>:
+                            <Typography type="subheading" component="h4">No Images found! :(</Typography>    
+                        }
+                    </TabPanel>
+                    <TabPanel value={this.state.tabIndex} index={1}>
+                    {this.state.imageBought.length > 0 ? 
+                            <List dense>
+                                {this.state.imageBought.map((image, index) => {
+                                    return <span key={index}>
+                                        <ListItem button>
+                                            <ListItemAvatar>
+                                                <Avatar src={`http://127.0.0.1:8080/ipfs/${image.ipfsHash}`}/>
+                                            </ListItemAvatar>
+                                            <ListItemText primary={image.name} secondary={image.price+" PBcoin"}/>
+                                            <ListItemSecondaryAction>
+                                                <IconButton aria-label="Download" color="primary"><DownloadIcon/></IconButton>
+                                            </ListItemSecondaryAction>
+                                        </ListItem>
+                                    </span>
+                                })}
+                            </List>:
+                            <Typography type="subheading" component="h4">No Images found! :(</Typography>    
+                        }
+                    </TabPanel>
                 </CardContent>
             </Card>
             
