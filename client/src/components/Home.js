@@ -34,11 +34,12 @@ class Home extends Component {
         const imageCount = await marketplace.methods.imageCount().call();
         for (var i = 1; i <= imageCount; i++){
             const image = await marketplace.methods.images(i).call();
-            image.purchased = await marketplace.methods.imagesPaid(this.state.account, i).call();
-            
-            this.setState({
-                images: [...this.state.images, image]
-            })
+            if(parseInt(image.status) === 1){
+                image.purchased = await marketplace.methods.imagesPaid(this.state.account, i).call();
+                this.setState({
+                    images: [...this.state.images, image]
+                })
+            }
         }
         this.setState({marketplace, token, currencyCode})
     }

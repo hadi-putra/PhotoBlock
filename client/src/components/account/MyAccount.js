@@ -18,6 +18,8 @@ import {withStyles} from '@material-ui/core/styles'
 import IconButton from '@material-ui/core/IconButton'
 import DownloadIcon from '@material-ui/icons/CloudDownload'
 import EditIcon from '@material-ui/icons/Edit'
+import PublishIcon from '@material-ui/icons/Publish'
+import ArchieveIcon from '@material-ui/icons/Archive'
 import {Link} from 'react-router-dom'
 import PhotoBlockToken from "./../../contracts/PhotoBlockToken.json"
 import ImageMarketplace from "./../../contracts/ImageMarketPlace.json"
@@ -121,7 +123,7 @@ class MyAccount extends Component {
                 })
             }
 
-            this.setState({currencyCode, wallet})
+            this.setState({marketplace, currencyCode, wallet})
         } catch(error){
             alert(
                 `Failed to load web3, accounts, or contract. Check console for details.`,
@@ -138,9 +140,26 @@ class MyAccount extends Component {
             currencyCode: '',
             wallet: 0,
             tabIndex: 0,
+            marketplace: null,
             imageUploaded: [],
             imageBought: []
         }
+        this.editVisibilityImage = this.editVisibilityImage.bind(this)
+    }
+
+    editVisibilityImage = (_index, _status) => event => {
+        event.preventDefault();
+        const images = this.state.imageUploaded
+        const image = images[_index]
+        this.state.marketplace.methods.editImageDescr(image.id, image.name, 
+            image.price, _status)
+            .send({from: this.state.account })
+            .once('receipt', (receipt) => {
+                console.log(receipt)
+                images[_index].status = _status
+                this.setState({imageUploaded: images})
+                //this.setState({loading: false, redirect: true})
+            });
     }
 
     handleChange = (e, index) => {
@@ -193,7 +212,13 @@ class MyAccount extends Component {
                                             </ListItemAvatar>
                                             <ListItemText primary={image.name} secondary={image.price+" PBcoin"}/>
                                             <ListItemSecondaryAction>
-                                                <Link to={"/image/"+image.id+"/edit"}>
+                                                {parseInt(image.status) !== 1 ? 
+                                                    <IconButton aria-label="Publish" color="primary" onClick={this.editVisibilityImage(index, 1)}><PublishIcon/></IconButton> 
+                                                    : null}
+                                                {parseInt(image.status) !== 2 ? 
+                                                    <IconButton aria-label="Archieve" color="primary" onClick={this.editVisibilityImage(index, 2)}><ArchieveIcon/></IconButton> 
+                                                    : null}
+                                                <Link to={"/image/edit/"+image.id}>
                                                     <IconButton aria-label="Edit" color="primary"><EditIcon/></IconButton>
                                                 </Link>
                                                 <IconButton aria-label="Download" color="primary"><DownloadIcon/></IconButton>

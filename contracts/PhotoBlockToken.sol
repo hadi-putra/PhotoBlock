@@ -35,8 +35,8 @@ contract PhotoBlockToken{
     );
 
     function transfer(address _to, uint256 _value) public returns(bool success){
-        require(_to != address(0));
-        require(balances[msg.sender] >= _value);
+        require(_to != address(0), "Invalid address!");
+        require(balances[msg.sender] >= _value, "Insuffucient Balance");
 
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
@@ -45,8 +45,8 @@ contract PhotoBlockToken{
     }
 
     function transferFrom(address _from, address _to, uint256 _value) public returns(bool success){
-        require(balances[_from] >= _value);
-        require(allowances[_from][msg.sender] >= _value);
+        require(balances[_from] >= _value, "Insufficient Balance");
+        require(allowances[_from][msg.sender] >= _value, "Insufficient Allowance");
 
         balances[_from] = balances[_from].sub(_value);
         balances[_to] = balances[_to].add(_value);
@@ -63,7 +63,7 @@ contract PhotoBlockToken{
 
     function transferAndCall(address _contract, address _to, uint256 _value, bytes memory _extraData) public {
         TokenRecipient recipient = TokenRecipient(_contract);
-        require(recipient.tokenFallback(msg.sender, _value, _extraData));
+        require(recipient.tokenFallback(msg.sender, _value, _extraData), "Fallback fail");
         transfer(_to, _value);
     }
 

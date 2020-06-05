@@ -5,6 +5,7 @@ import Home from './components/Home'
 import NewImage from './components/image/NewImage'
 import MyAccount from './components/account/MyAccount'
 import EditImage from './components/image/EditImage'
+import Image from './components/image/Image'
 import Navbar from './components/Navbar'
 
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -57,8 +58,13 @@ class App extends Component {
           web3={this.state.web3}
           account={this.state.account}/>}/>
         <Route
-          path="/image/:imageId/edit"
+          path="/image/edit/:imageId"
           render = {(props) => <EditImage {...props}
+          account = {this.state.account}
+          web3 = {this.state.web3}/>}/>
+        <Route
+          path="/image/:imageId"
+          render = {(props) => <Image {...props}
           account = {this.state.account}
           web3 = {this.state.web3}/>}/>
         <Route

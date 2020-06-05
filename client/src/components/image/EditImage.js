@@ -62,7 +62,7 @@ class EditImage extends Component {
                 this.setState({redirect: true})
                 return;
             }
-            this.setState({marketplace, name: image.name, price: image.price, loading: false})
+            this.setState({marketplace, name: image.name, price: image.price, status: image.status, loading: false})
         } catch(error){
             alert(
                 `Failed to load web3, accounts, or contract. Check console for details.`,
@@ -80,6 +80,7 @@ class EditImage extends Component {
             redirect: false,
             name: '',
             price: 0,
+            status: 0,
             marketplace: null,
             loading: true,
             errors: {'price': false, 'name': false}
@@ -116,7 +117,7 @@ class EditImage extends Component {
         if(Object.values(_errors).every(item => item === false)){
             this.setState({loading: true})
             this.state.marketplace.methods.editImageDescr(this.state.id, this.state.name, 
-                this.state.price)
+                this.state.price, this.state.status)
                 .send({from: this.state.account })
                 .once('receipt', (receipt) => {
                     console.log(receipt)

@@ -90,7 +90,7 @@ class NewImage extends Component{
         event.preventDefault()
         const value = name === 'image' ? event.target.files[0] : event.target.value
         const _errors = this.state.errors
-        
+        console.log(value)
         if(name === 'image'){
             _errors['file'] = _errors['name'] = false
             this.setState(() => ({name: !this.state.name? pathParse(value.name).name : this.state.name, file: value}))
@@ -106,7 +106,7 @@ class NewImage extends Component{
         this.setState({errors: _errors})
     }
 
-    clickSubmit(event){
+    clickSubmit = status => event => {
         event.preventDefault()
         const _errors = this.state.errors
         _errors['file'] = !this.state.file
@@ -125,15 +125,17 @@ class NewImage extends Component{
             const ext = pathparse.ext
             const mime = this.state.file.type
 
-            this.processIPFS(source, this.state.name, this.state.price, ext, mime)
+            this.processIPFS(source, this.state.name, this.state.price, ext, mime, status)
         }
         
     }
 
-    async processIPFS(source, _name, _price, _fileExt, _fileMime){
+    async processIPFS(source, _name, _price, _fileExt, _fileMime, _status){
+        console.log(_name, _price, _fileExt, _fileMime, _status)
         try {
           for await (const file of source) {
-            this.state.marketplace.methods.createImage(_name, _price, file.cid.toString(), _fileExt, _fileMime)
+            this.state.marketplace.methods.createImage(_name, _price, file.cid.toString(), 
+                _fileExt, _fileMime, _status)
               .send({from: this.state.account })
               .once('receipt', (receipt) => {
                 /*var created = receipt.events.ImageCreated.returnValues
@@ -185,7 +187,8 @@ class NewImage extends Component{
                     }
                 </CardContent>
                 <CardActions>
-                    <Button color="primary" variant="contained" onClick={this.clickSubmit} className={classes.submit}>Submit</Button>
+                    <Button color="secondary" variant="contained" onClick={this.clickSubmit(0)} className={classes.submit}>Save as Draft</Button>
+                    <Button color="primary" variant="contained" onClick={this.clickSubmit(1)} className={classes.submit}>Save & Publish</Button>
                 </CardActions>
             </Card>
         </div>)
