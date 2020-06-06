@@ -8506,12 +8506,12 @@
         }
       },
       "links": {},
-      "address": "0x24dE24c83906EBc6AA10b098b8FE6fC2B8D8ac98",
-      "transactionHash": "0x4caabac234376c41141da84e27878c0fa112c5590bbc061c28e788998a2fb99f"
+      "address": "0x8AaFCcF6f2F0f12c4911c327212616ae0806a42D",
+      "transactionHash": "0x6331f70752c2fac4ad966d63da21d66475a0a65a30b1ab3a902fb98459594207"
     }
   },
   "schemaVersion": "3.0.23",
-  "updatedAt": "2020-06-04T09:19:43.827Z",
+  "updatedAt": "2020-06-06T04:25:27.381Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

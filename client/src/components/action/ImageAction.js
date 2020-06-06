@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import IconButton from '@material-ui/core/IconButton'
 import DownloadIcon from '@material-ui/icons/CloudDownload'
 import AddToCartIcon from '@material-ui/icons/AddShoppingCart'
-import ipfs from'./../../ipfs';
+import {retrieveImage, purchaseImage} from './ImageActionApi'
 
 const styles = theme => ({
     iconButton: {
@@ -26,62 +26,31 @@ class ImageAction extends Component {
         }
     }
     
-    retrieveImage = async(_id) => {
-        const image = await this.state.marketplace.methods.images(_id).call();
-
-        const source = ipfs.cat(`/ipfs/${image.ipfsHash}`)
-        try{
-            for await (const buffer of source) {
-                let blob = new Blob([buffer],{type: image.mime})
-                //let imgUrl = window.URL.createObjectURL(blob)
-                var a = document.createElement("a");
-                document.body.appendChild(a);
-                a.style = "display: none";
-                let url = window.URL.createObjectURL(blob);
-                a.href = url;
-                a.download = `${image.name}.${image.ext}`;
-                a.click()
-                window.URL.revokeObjectURL(url);
-            }
-        } catch (err) {
-            console.log("exception")
-            console.error(err)
-        }
-    }
-
-    purchaseImage = async(_image) => {
-        this.state.token.methods
-            .transferAndCall(this.state.marketplace._address, _image.owner, 
-                _image.price, this.state.web3.utils.toHex(_image.id))
-            .send({ from: this.state.account })
+    handlePurchase = async(_image) => {
+        purchaseImage(_image, this.state.marketplace, this.state.token, this.state.account, this.state.web3)
             .once('receipt', (receipt) => {
                 _image.purchased = true
                 this.setState({image: _image})
+            }).catch(error => {
+                console.error(error.message)
             })
     }
 
     render(){
         const {classes} = this.props
         return (<span>
-            { (this.state.image.owner !== this.state.account) ?
-                !this.state.image.purchased ?
-                    <IconButton color="secondary" dense="dense" onClick={(event) => {
-                        event.preventDefault();
-                        this.purchaseImage(this.state.image)
-                    }}>
-                        <AddToCartIcon className={this.props.cartStyle || classes.iconButton}/>
-                    </IconButton> :
-                    <IconButton color="secondary" dense="dense" onClick={(event) => {
-                        event.preventDefault();
-                        this.retrieveImage(this.state.image.id)}}>
-                        <DownloadIcon className={this.props.cartStyle || classes.iconButton}/>
-                    </IconButton> :
+            { (this.state.image.owner === this.state.account || this.state.image.purchased) ?
                 <IconButton color="secondary" dense="dense" onClick={(event) => {
                     event.preventDefault();
-                    this.retrieveImage(this.state.image.id)
-                    }}>
+                    retrieveImage(null, this.state.image.id, this.state.marketplace)}}>
                     <DownloadIcon className={this.props.cartStyle || classes.iconButton}/>
-                </IconButton>
+                </IconButton> :
+                <IconButton color="secondary" dense="dense" onClick={(event) => {
+                    event.preventDefault();
+                    this.handlePurchase(this.state.image)
+                }}>
+                    <AddToCartIcon className={this.props.cartStyle || classes.iconButton}/>
+                </IconButton> 
             }
         </span>)
     }

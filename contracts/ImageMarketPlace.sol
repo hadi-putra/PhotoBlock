@@ -179,6 +179,7 @@ contract ImageMarketPlace is TokenRecipient, TokenSale {
         stats[_imageId] = imgStat;
         imageReviews[_imageId].push(reviewCount);
         reviews[reviewCount] = review;
+        haveReviewed[msg.sender][_imageId] = true;
 
         // Send bonus if meet the criteria
         if(!hasPaid[msg.sender][_imageId] && tokenContract.balanceOf(address(this)) >= 1){

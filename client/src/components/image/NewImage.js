@@ -90,7 +90,7 @@ class NewImage extends Component{
         event.preventDefault()
         const value = name === 'image' ? event.target.files[0] : event.target.value
         const _errors = this.state.errors
-        console.log(value)
+        
         if(name === 'image'){
             _errors['file'] = _errors['name'] = false
             this.setState(() => ({name: !this.state.name? pathParse(value.name).name : this.state.name, file: value}))
@@ -144,7 +144,7 @@ class NewImage extends Component{
                   images: [...this.state.images, created]
                 })*/
                 this.setState({loading: false, redirect: true})
-              })
+              }).catch(error => {})
           }
         } catch (err) {
           console.error(err)

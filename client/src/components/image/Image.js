@@ -17,9 +17,14 @@ import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogActions from '@material-ui/core/DialogActions'
 import TextAreaAutoSize from '@material-ui/core/TextareaAutosize'
-import ipfs from'./../../ipfs';
-import ImageMarketplace from "./../../contracts/ImageMarketPlace.json"
+import List from '@material-ui/core/List'
+import ListItem from '@material-ui/core/ListItem'
+import ListItemText from '@material-ui/core/ListItemText'
+import Divider from '@material-ui/core/Divider'
 import Button from '@material-ui/core/Button'
+import {retrieveImage, purchaseImage} from './../action/ImageActionApi';
+import ImageMarketplace from "./../../contracts/ImageMarketPlace.json"
+import PhotoBlockToken from "./../../contracts/PhotoBlockToken.json"
 
 const styles = theme => ({
     root: {
@@ -67,6 +72,9 @@ const styles = theme => ({
     },
     reviewHeaderTitle: {
         flexGrow: 1
+    },
+    listContent: {
+        marginTop: '24px'
     }
 })
 
@@ -76,6 +84,12 @@ class Image extends Component {
             const web3 = this.state.web3
             const networkId = await web3.eth.net.getId();
 
+            const tokenData = PhotoBlockToken.networks[networkId];
+            const token = new web3.eth.Contract(
+                PhotoBlockToken.abi,
+                tokenData && tokenData.address,
+            );
+
             const imageMarketplace = ImageMarketplace.networks[networkId];
             const marketplace = new web3.eth.Contract(
                 ImageMarketplace.abi,
@@ -84,10 +98,18 @@ class Image extends Component {
 
             const image = await marketplace.methods.images(this.state.id).call();
             const imageStat = await marketplace.methods.stats(this.state.id).call();
-            //const reviews = await marketplace.methods.reviews(this.state.id).call();
-            //const hasReviewed = await marketplace.methods.hasReviewed(this.state.account, this.state.id).call();
             
-            if (parseInt(image.status !== 1)){
+            const hasReviewed = await marketplace.methods.haveReviewed(this.state.account, this.state.id).call();
+            console.log("reviews",hasReviewed)
+            const reviews = await marketplace.methods.imagesReviews(this.state.id).call();
+            for (var i = 0; i < reviews.length; i++){
+                const review = await marketplace.methods.reviews(reviews[i]).call()
+                this.setState({
+                    reviews: [...this.state.reviews, review]
+                })
+            }
+
+            if (parseInt(image.id) === 0 || (parseInt(image.status) !== 1 && image.owner !== this.state.account)){
                 this.setState({redirect: true})
                 return;
             }
@@ -97,7 +119,7 @@ class Image extends Component {
             }
 
 
-            this.setState({marketplace, image, imageStat,  /*hasReviewed,*/ loading: false})
+            this.setState({marketplace, token, image, imageStat,  hasReviewed, loading: false})
         } catch(error){
             alert(
                 `Failed to load web3, accounts, or contract. Check console for details.`,
@@ -117,7 +139,8 @@ class Image extends Component {
             reviews: [],
             redirect: false,
             marketplace: null,
-            hasReviewed: true,
+            token: null,
+            hasReviewed: false,
             isOpenDialog: false,
             ratingValue: 0,
             reviewDesc: '',
@@ -125,7 +148,25 @@ class Image extends Component {
         }
         this.closeDialog = this.closeDialog.bind(this);
         this.submitReview = this.submitReview.bind(this);
+        this.buyImage = this.buyImage.bind(this);
     }
+
+    handleDownload = ()=>{
+        retrieveImage(this.state.image)
+    }
+
+    buyImage = async(event)=>{
+        event.preventDefault()
+        purchaseImage(this.state.image, this.state.marketplace, this.state.token, 
+            this.state.account, this.state.web3)
+            .once('receipt', (receipt) => {
+                const _image = this.state.image
+                _image.purchased = true
+                this.setState({image: _image})
+            }).catch(error => {
+                console.error(error.message)
+            })
+    } 
 
     closeDialog = event => {
         this.setState({isOpenDialog: false})
@@ -135,10 +176,28 @@ class Image extends Component {
         this.setState({isOpenDialog: false})
         if(parseInt(this.state.ratingValue) < 1 || parseInt(this.state.ratingValue) > 5)
             return;
-        this.state.marketplace.methods.postRate(this.state.id, this.state.reviewDesc, this.state.ratingValue)
+        
+        const _datePost = parseInt(new Date().getTime()/1000)
+        this.state.marketplace.methods.postRate(this.state.id, this.state.reviewDesc, this.state.ratingValue, _datePost)
             .send({from: this.state.account})
             .once('receipt', receipt => {
                 console.log('receipt', receipt);
+                const _event = receipt.events.ImageReviewed.returnValues
+                let imgStat = this.state.imageStat
+                imgStat.totalRate = parseInt(imgStat.totalRate) + parseInt(this.state.ratingValue)
+                imgStat.total = parseInt(imgStat.total) + 1
+                let _review = {
+                    id : _event.id,
+                    by : _event.by,
+                    content: _event.content,
+                    rate: parseInt(_event.rating),
+                    datePost: _event.datePost
+                }
+                this.setState({
+                    reviews: [...this.state.reviews, _review],
+                    ratingValue: 0,
+                    reviewDesc: ''
+                })
             }).catch(error => {
                 console.error(error);
             });
@@ -181,18 +240,7 @@ class Image extends Component {
                     title={this.state.image.name}
                     action={<span className={classes.action}>
                         {(this.state.image.owner !== this.state.account) ?
-                        !this.state.image.purchased ?
-                            <IconButton color="secondary" dense="dense" onClick={(event) => {
-                                event.preventDefault();
-                                this.purchaseImage(this.state.image)
-                            }}>
-                                <AddToCartIcon />
-                            </IconButton> :
-                            <IconButton color="secondary" dense="dense" onClick={(event) => {
-                                event.preventDefault();
-                                this.retrieveImage(this.state.image.id)}}>
-                                <DownloadIcon />
-                            </IconButton> :
+                            null :
                             <Link to={"/image/edit/"+this.state.image.id}>
                                 <IconButton color="secondary" dense="dense">
                                     <EditIcon />
@@ -211,6 +259,14 @@ class Image extends Component {
                             "Rating: "+(this.state.imageStat.totalRate / this.state.imageStat.total).toFixed(2)+" ("+this.state.imageStat.total+" Review)"
                         }
                         <span className={classes.price}>{this.state.image.price+' PBCoin'}</span>
+                        {
+                            this.state.image.owner === this.state.account || this.state.image.purchased ? 
+                                <Button variant="contained" color="primary" startIcon={<DownloadIcon/>} size="large" 
+                                    onClick={this.handleDownload}>Download</Button>
+                            :  <Button variant="contained" color="primary" startIcon={<AddToCartIcon/>} size="large"
+                                    onClick={this.buyImage}>Buy</Button>
+                        }
+                        
                     </Typography>
                 </div>
             </Card>
@@ -219,14 +275,40 @@ class Image extends Component {
                     <div className={classes.reviewHeader}>
                         <Typography variant="h5" className={classes.reviewHeaderTitle}>Reviews</Typography>
                         {
-                            this.state.hasReviewed && <Button variant="outlined" color="primary" onClick={(event) => {
+                            this.state.image.owner !== this.state.account && !this.state.hasReviewed && 
+                            <Button variant="outlined" color="primary" onClick={(event) => {
                                 event.preventDefault();
                                 this.setState({isOpenDialog: true})
                             }}>Leave Review</Button>
                         }
                     </div>
                     <div style={{'marginTop': '16px'}}>
-
+                        {
+                            this.state.reviews.length > 0 ?
+                            <List>
+                                {
+                                    this.state.reviews.map((item, index) => {
+                                        return <span key={index}>
+                                            <ListItem>
+                                                <ListItemText
+                                                    classes={{ secondary: classes.listContent }}
+                                                    primary={'By '+item.by}
+                                                    secondary={
+                                                        <span>
+                                                            <Rating name={"read-only-"+item.id} value={parseInt(item.rate)} size="small" readOnly/><br/>
+                                                            <Typography component="span">{item.content}</Typography><br/>
+                                                            <Typography component="span" type="subheading">{new Date(item.datePost*1000).toLocaleDateString()}</Typography>
+                                                        </span>
+                                                    }
+                                                />
+                                            </ListItem>
+                                            <Divider/>
+                                        </span>
+                                    })
+                                }
+                            </List>
+                            :<Typography type="subheading" component="h4">No Review yet! :(</Typography>
+                        }
                     </div>
                 </div>
             </Paper>

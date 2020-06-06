@@ -24,6 +24,7 @@ import {Link} from 'react-router-dom'
 import PhotoBlockToken from "./../../contracts/PhotoBlockToken.json"
 import ImageMarketplace from "./../../contracts/ImageMarketPlace.json"
 import PropTypes from 'prop-types'
+import { Chip } from '@material-ui/core'
 
 const styles = theme => ({
     root: {
@@ -169,6 +170,8 @@ class MyAccount extends Component {
 
     render(){
         const {classes} = this.props
+        const status = ['Draft', 'Published', 'Archieved']
+        const chipColor = ['default','primary','secondary']
         return(
         <div className={classes.root}>
            <Paper className={classes.paper} elevation={4}>
@@ -184,7 +187,11 @@ class MyAccount extends Component {
                                     </Grid>
                                     <Grid item xs={10} sm={10}>
                                         <Typography type="subheading">{this.state.account}</Typography>
-                                        <Typography type="subheading">{this.state.wallet+' '+this.state.currencyCode}</Typography>
+                                        <div>
+                                            <Typography type="subheading">{this.state.wallet+' '+this.state.currencyCode} &nbsp;
+                                                <Link style={{'textDecoration':'none'}} color="inherit" to="/topup">Top Up</Link>
+                                            </Typography>
+                                        </div>
                                     </Grid>
                                 </Grid>
                             </CardContent>
@@ -206,11 +213,16 @@ class MyAccount extends Component {
                             <List dense>
                                 {this.state.imageUploaded.map((image, index) => {
                                     return <span key={index}>
-                                        <ListItem button>
+                                        <ListItem button component={Link} to={"/image/"+image.id}>
                                             <ListItemAvatar>
                                                 <Avatar src={`http://127.0.0.1:8080/ipfs/${image.ipfsHash}`}/>
                                             </ListItemAvatar>
-                                            <ListItemText primary={image.name} secondary={image.price+" PBcoin"}/>
+                                            <ListItemText primary={
+                                            <div>
+                                                <Typography display="inline">{image.name}</Typography>
+                                                <Chip color={chipColor[image.status]} label={status[image.status]} size="small" style={{'marginLeft':'8px'}}/>
+                                            </div>
+                                            } secondary={image.price+" PBcoin"}/>
                                             <ListItemSecondaryAction>
                                                 {parseInt(image.status) !== 1 ? 
                                                     <IconButton aria-label="Publish" color="primary" onClick={this.editVisibilityImage(index, 1)}><PublishIcon/></IconButton> 
@@ -236,7 +248,7 @@ class MyAccount extends Component {
                             <List dense>
                                 {this.state.imageBought.map((image, index) => {
                                     return <span key={index}>
-                                        <ListItem button>
+                                        <ListItem button component={Link} to={"/image/"+image.id}>
                                             <ListItemAvatar>
                                                 <Avatar src={`http://127.0.0.1:8080/ipfs/${image.ipfsHash}`}/>
                                             </ListItemAvatar>

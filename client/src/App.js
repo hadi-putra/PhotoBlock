@@ -4,6 +4,7 @@ import getWeb3 from "./getWeb3";
 import Home from './components/Home'
 import NewImage from './components/image/NewImage'
 import MyAccount from './components/account/MyAccount'
+import TopUpBalance from './components/account/TopUpBalance'
 import EditImage from './components/image/EditImage'
 import Image from './components/image/Image'
 import Navbar from './components/Navbar'
@@ -73,6 +74,11 @@ class App extends Component {
           account = {this.state.account}
           web3 = {this.state.web3}
           />}/>
+        <Route
+          path="/topup"
+          render = {(props) => <TopUpBalance {...props}
+          account = {this.state.account}
+          web3 = {this.state.web3}/>}/>
       </Switch>
     </div>);
   }
