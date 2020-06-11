@@ -1,0 +1,28 @@
+version: "3"
+
+services: 
+    ganachecli:
+        image: trufflesuite/ganache-cli:latest
+        command: bash -c "ganache-cli -h 0.0.0.0"
+        ports: 
+            - 8545:8545
+
+    photoblock:
+        container_name: photoblock
+        build: 
+            context: ./
+            dockerfile: Dockerfile
+        command: >
+            sh -c "truffle compile &&
+                    truffle test &&
+                    truffle migrate --reset &&
+                    cd client &&
+                    npm start"
+        ports: 
+            - "3000:3000"
+        depends_on: 
+            - ganachecli
+#        tty: true
+        volumes: 
+            - './client/src:/app/client/src'
+            -'./client/node_modules:/app/client/node_modules'
