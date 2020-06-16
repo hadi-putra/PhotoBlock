@@ -1,10 +1,12 @@
-FROM node:latest
+FROM tarampampam/node:13-alpine
 
+RUN mkdir -p /app
 WORKDIR '/app'
 
-#ENV PATH /app/client/node_modules/.bin:$PATH
+#RUN apk add -t .gyp --no-cache python g++ make \
+#    && npm install -g truffle@3.2.x \
+#    && apk del .gyp
 
-RUN npm install -g truffle && npm config set bin-links false
 
 #COPY contracts ./contracts
 #COPY migrations ./migrations
@@ -16,6 +18,12 @@ RUN npm install -g truffle && npm config set bin-links false
 #COPY client/public ./client/public
 COPY client/package.json ./client/package.json
 COPY client/package-lock.json ./client/package-lock.json
-RUN cd client && npm ci
+
+ENV PATH /app/client/node_modules/.bin:$PATH
+
+RUN cd client \
+    && apk add -t .gyp --no-cache --virtual python g++ make \
+    && npm i -g npm && npm ci \
+    && apk del .gyp
 
 COPY . ./
