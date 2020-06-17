@@ -15,33 +15,38 @@ const styles = theme => ({
 class Home extends Component {
 
     componentDidMount = async() => {
-        const web3 = this.props.web3
-        const networkId = await web3.eth.net.getId();
-        const networkData = ImageMarketPlace.networks[networkId];
-        const marketplace = new web3.eth.Contract(
-            ImageMarketPlace.abi,
-            networkData && networkData.address,
-        );
+        try{
+            const web3 = this.props.web3
+            const networkId = await web3.eth.net.getId();
+            const networkData = ImageMarketPlace.networks[networkId];
+            const marketplace = new web3.eth.Contract(
+                ImageMarketPlace.abi,
+                networkData && networkData.address,
+            );
 
-        const tokenData = PhotoBlockToken.networks[networkId];
-        const token = new web3.eth.Contract(
-            PhotoBlockToken.abi,
-            tokenData && tokenData.address,
-        );
+            const tokenData = PhotoBlockToken.networks[networkId];
+            const token = new web3.eth.Contract(
+                PhotoBlockToken.abi,
+                tokenData && tokenData.address,
+            );
 
-        const currencyCode = await token.methods.symbol().call();
-        
-        const imageCount = await marketplace.methods.imageCount().call();
-        for (var i = 1; i <= imageCount; i++){
-            const image = await marketplace.methods.images(i).call();
-            if(parseInt(image.status) === 1){
-                image.purchased = await marketplace.methods.imagesPaid(this.state.account, i).call();
-                this.setState({
-                    images: [...this.state.images, image]
-                })
+            const currencyCode = await token.methods.symbol().call();
+            
+            const imageCount = await marketplace.methods.imageCount().call();
+            for (var i = 1; i <= imageCount; i++){
+                const image = await marketplace.methods.images(i).call();
+                if(parseInt(image.status) === 1){
+                    image.purchased = await marketplace.methods.imagesPaid(this.state.account, i).call();
+                    this.setState({
+                        images: [...this.state.images, image]
+                    })
+                }
             }
+            this.setState({marketplace, token, currencyCode})
+        } catch(error){
+            console.error(error)
         }
-        this.setState({marketplace, token, currencyCode})
+        
     }
     
     constructor(props){

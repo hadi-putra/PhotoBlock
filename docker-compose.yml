@@ -1,11 +1,19 @@
-version: "3"
+version: "2"
 
 services: 
-    ganachecli:
+    ganache:
         image: trufflesuite/ganache-cli:latest
-        command: bash -c "ganache-cli -h 0.0.0.0"
+        command: ganache-cli -h 0.0.0.0
         ports: 
             - 8545:8545
+
+    ipfs:
+        image: ipfs/go-ipfs:latest
+        ports: 
+            - 4001:4001
+            - 5001:5001
+            - 8080:8080
+            - 8081:8081
 
     photoblock:
         container_name: photoblock
@@ -17,12 +25,13 @@ services:
                     truffle test &&
                     truffle migrate --reset &&
                     cd client &&
-                    npm start"
+                    npm run start"
         ports: 
             - "3000:3000"
         depends_on: 
-            - ganachecli
-#        tty: true
+            - ganache
+            - ipfs
+        tty: true
         volumes: 
             - './client/src:/app/client/src'
-            -'./client/node_modules:/app/client/node_modules'
+            - './client/node_modules:/app/client/node_modules'
