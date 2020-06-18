@@ -19,7 +19,7 @@ contract("PhotoBlockToken", accounts => {
         const totalSupply = await tokenInstance.totalSupply.call();
         assert.equal(totalSupply.toNumber(), 1000000000, 'sets the total supply to 1,000,000,000');
         const adminBalance = await tokenInstance.balanceOf.call(accounts[0]);
-        assert.equal(adminBalance.toNumber(), 1000000000, 'it allocates the initial supply to the admin');
+        assert.equal(adminBalance.toNumber(), 999200000, 'it allocates the initial supply to the admin');
     });
 
     it("transfer token ownership", async() => {
@@ -41,7 +41,7 @@ contract("PhotoBlockToken", accounts => {
         const balance1 = await tokenInstance.balanceOf.call(accounts[1]);
         assert.equal(balance1.toNumber(), tfAmount, 'adds the receiving amount');
         const balance0 = await tokenInstance.balanceOf.call(accounts[0]);
-        assert.equal(balance0.toNumber(), 999998000, 'deduct the amount from the sending account');
+        assert.equal(balance0.toNumber(), 999198000, 'deduct the amount from the sending account');
     });
 
     it('approve for delegated transfer', async() =>{

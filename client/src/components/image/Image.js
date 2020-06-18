@@ -195,6 +195,7 @@ class Image extends Component {
                 }
                 this.setState({
                     reviews: [...this.state.reviews, _review],
+                    hasReviewed: true,
                     ratingValue: 0,
                     reviewDesc: ''
                 })
@@ -275,7 +276,7 @@ class Image extends Component {
                     <div className={classes.reviewHeader}>
                         <Typography variant="h5" className={classes.reviewHeaderTitle}>Reviews</Typography>
                         {
-                            this.state.image.owner !== this.state.account && !this.state.hasReviewed && 
+                            this.state.image.owner !== this.state.account && this.state.image.purchased && !this.state.hasReviewed && 
                             <Button variant="outlined" color="primary" onClick={(event) => {
                                 event.preventDefault();
                                 this.setState({isOpenDialog: true})

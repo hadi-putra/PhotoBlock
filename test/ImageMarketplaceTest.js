@@ -27,7 +27,6 @@ contract("ImageMarketplace", accounts => {
 
     it('facilitates token buying', async() => {
         const tokenInstance = await token.deployed();
-        await tokenInstance.transfer(contractInstance.address, 800000, { from: accounts[0] });
 
         numberOfTokens = 10;
         const{ logs } = await contractInstance.buyTokens(numberOfTokens, { from: accounts[1], value: numberOfTokens * tokenPrice });
