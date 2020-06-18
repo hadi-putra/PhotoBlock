@@ -8,7 +8,10 @@ services:
             - 8545:8545
 
     ipfs:
-        image: ipfs/go-ipfs:latest
+        container_name: ipfs
+        build: 
+            context: ./custom-ipfs
+            dockerfile: Dockerfile
         ports: 
             - 4001:4001
             - 5001:5001

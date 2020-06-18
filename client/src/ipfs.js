@@ -1,5 +1,5 @@
 const IpfsHttpClient = require('ipfs-http-client');
-// const ipfs = new IpfsHttpClient({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' });
+//const ipfs = new IpfsHttpClient({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' });
 //onst ipfs = new IpfsHttpClient("https://mainnet.infura.io/v3/6ed74411e82443c280920cb6692655cb");
 
 // local

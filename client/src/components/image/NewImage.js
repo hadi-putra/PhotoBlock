@@ -131,7 +131,6 @@ class NewImage extends Component{
     }
 
     async processIPFS(source, _name, _price, _fileExt, _fileMime, _status){
-        console.log(_name, _price, _fileExt, _fileMime, _status)
         try {
           for await (const file of source) {
             this.state.marketplace.methods.createImage(_name, _price, file.cid.toString(), 
