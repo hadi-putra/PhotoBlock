@@ -184,14 +184,14 @@ contract ImageMarketPlace is TokenRecipient, TokenSale {
         // Send bonus if meet the criteria
         if(!hasPaid[msg.sender][_imageId] && tokenContract.balanceOf(address(this)) >= 1){
             // transfer 1 PBCoin
-            sendTokenTo(msg.sender, 1);
+            sendTokenTo(msg.sender, 10);
             hasPaid[msg.sender][_imageId] = true;
         }
 
         if (imgStat.total >= 100 && (imgStat.totalRate/imgStat.total) > 4 
             && !hasPaid[_img.owner][_imageId] && tokenContract.balanceOf(address(this)) >= 2){
             // transfer 2 PBCoin
-            sendTokenTo(msg.sender, 2);
+            sendTokenTo(_img.owner, 30);
             hasPaid[_img.owner][_imageId] = true;
         }
 
