@@ -22,7 +22,8 @@ import ListItem from '@material-ui/core/ListItem'
 import ListItemText from '@material-ui/core/ListItemText'
 import Divider from '@material-ui/core/Divider'
 import Button from '@material-ui/core/Button'
-import {retrieveImage, purchaseImage} from './../action/ImageActionApi';
+import ReactImageProcess from 'react-image-process'
+import {retrieveImage, purchaseImage} from './../action/ImageActionApi'
 import ImageMarketplace from "./../../contracts/ImageMarketPlace.json"
 import PhotoBlockToken from "./../../contracts/PhotoBlockToken.json"
 
@@ -181,7 +182,7 @@ class Image extends Component {
         this.state.marketplace.methods.postRate(this.state.id, this.state.reviewDesc, this.state.ratingValue, _datePost)
             .send({from: this.state.account})
             .once('receipt', receipt => {
-                console.log('receipt', receipt);
+                //console.log('receipt', receipt);
                 const _event = receipt.events.ImageReviewed.returnValues
                 let imgStat = this.state.imageStat
                 imgStat.totalRate = parseInt(imgStat.totalRate) + parseInt(this.state.ratingValue)
@@ -252,8 +253,14 @@ class Image extends Component {
                     }
                 />
                 <div className={classes.flex}>
-                    <CardMedia className={classes.media} image={`http://127.0.0.1:8080/ipfs/${this.state.image.ipfsHash}`}
-                        title={this.state.image.name}/>
+                    <ReactImageProcess mode='waterMark' waterMarkType='text' waterMark={'PhotoBlock'} fontBold={false}
+                        fontSize={40} fontColor="#396" quality={0.1} coordinate={[10,20]} className={classes.media}>
+                        
+                        <CardMedia  
+                            component='img'
+                            src={`http://127.0.0.1:8080/ipfs/${this.state.image.ipfsHash}`}
+                            title={this.state.image.name}/>
+                    </ReactImageProcess>
                     <Typography component="p" variant="subtitle1" className={classes.subheading}>
                         {
                             parseInt(this.state.imageStat.total) === 0? "No Rating Yet" :

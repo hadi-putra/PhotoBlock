@@ -2,6 +2,7 @@ import React, {Component} from 'react'
 import PropTypes from 'prop-types'
 import {withStyles} from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
+import ReactImageProcess from 'react-image-process'
 import {GridList, GridListTile, GridListTileBar} from '@material-ui/core'
 import ImageAction from './../action/ImageAction'
 import {Link} from 'react-router-dom'
@@ -59,7 +60,10 @@ class Images extends Component {
                         {this.props.images.map((image, i) => (
                             <GridListTile key={i} className={classes.tile}>
                                 <Link to={"/image/"+image.id}>
+                                <ReactImageProcess mode='waterMark' waterMarkType='text' waterMark={'PhotoBlock'} fontBold={false}
+                                    fontSize={30} fontColor="#396" coordinate={[10,20]}>
                                     <img className={classes.image} src={`http://127.0.0.1:8080/ipfs/${image.ipfsHash}`} alt={image.name}/>
+                                  </ReactImageProcess>
                                 </Link> 
                                 <GridListTileBar className={classes.tileBar}
                                     title={<Link to={"/image/"+image.id} className={classes.tileTitle}>{image.name}</Link>}
